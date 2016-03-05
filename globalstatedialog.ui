@@ -19,6 +19,68 @@
      <property name="sizeConstraint">
       <enum>QLayout::SetMaximumSize</enum>
      </property>
+     <item row="1" column="2">
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <widget class="QCheckBox" name="chkIsRun">
+         <property name="text">
+          <string>Работает</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="lblNight">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item row="0" column="0">
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>Дата/Время</string>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="2">
+      <widget class="QLineEdit" name="edPwrOn"/>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>Интервал проверки</string>
+       </property>
+      </widget>
+     </item>
+     <item row="12" column="0">
+      <widget class="QPushButton" name="btnGetTime">
+       <property name="text">
+        <string>Обновить время</string>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="0">
+      <widget class="QLabel" name="label_10">
+       <property name="text">
+        <string>IIC питание</string>
+       </property>
+      </widget>
+     </item>
+     <item row="10" column="2">
+      <widget class="QLineEdit" name="edMeasures"/>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Состояние</string>
+       </property>
+      </widget>
+     </item>
      <item row="0" column="2">
       <layout class="QHBoxLayout" name="horizontalLayout_3">
        <item>
@@ -33,10 +95,13 @@
        </item>
       </layout>
      </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="label">
+     <item row="8" column="2">
+      <widget class="QLineEdit" name="edSensorInit"/>
+     </item>
+     <item row="10" column="0">
+      <widget class="QLabel" name="label_12">
        <property name="text">
-        <string>Состояние</string>
+        <string>Чтений данных</string>
        </property>
       </widget>
      </item>
@@ -47,23 +112,39 @@
        </property>
       </widget>
      </item>
-     <item row="12" column="2">
-      <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item row="3" column="2">
+      <layout class="QHBoxLayout" name="horizontalLayout_4">
        <item>
-        <widget class="QSpinBox" name="spinUpPos">
-         <property name="maximum">
-          <number>180</number>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="btTestPos">
-         <property name="text">
-          <string>Проба</string>
+        <widget class="QLineEdit" name="edCheckTime">
+         <property name="enabled">
+          <bool>true</bool>
          </property>
         </widget>
        </item>
       </layout>
+     </item>
+     <item row="6" column="2">
+      <widget class="QLabel" name="label_3">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="text">
+        <string>Задержки</string>
+       </property>
+      </widget>
+     </item>
+     <item row="9" column="2">
+      <widget class="QLineEdit" name="edRead"/>
+     </item>
+     <item row="11" column="0">
+      <widget class="QPushButton" name="btRefresh">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="text">
+        <string>Обновить</string>
+       </property>
+      </widget>
      </item>
      <item row="4" column="2">
       <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -309,118 +390,12 @@
        </item>
       </layout>
      </item>
-     <item row="3" column="0">
-      <widget class="QLabel" name="label_4">
-       <property name="text">
-        <string>Интервал проверки</string>
-       </property>
-      </widget>
-     </item>
      <item row="9" column="0">
       <widget class="QLabel" name="label_11">
        <property name="text">
         <string>Между чтениями</string>
        </property>
       </widget>
-     </item>
-     <item row="3" column="2">
-      <layout class="QHBoxLayout" name="horizontalLayout_4">
-       <item>
-        <widget class="QLineEdit" name="edCheckTime">
-         <property name="enabled">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </item>
-     <item row="0" column="0">
-      <widget class="QLabel" name="label_2">
-       <property name="text">
-        <string>Дата/Время</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="2">
-      <layout class="QHBoxLayout" name="horizontalLayout">
-       <item>
-        <widget class="QCheckBox" name="chkIsRun">
-         <property name="text">
-          <string>Работает</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QLabel" name="lblNight">
-         <property name="enabled">
-          <bool>true</bool>
-         </property>
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </item>
-     <item row="6" column="2">
-      <widget class="QLabel" name="label_3">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="text">
-        <string>Задержки</string>
-       </property>
-      </widget>
-     </item>
-     <item row="7" column="0">
-      <widget class="QLabel" name="label_10">
-       <property name="text">
-        <string>IIC питание</string>
-       </property>
-      </widget>
-     </item>
-     <item row="14" column="2">
-      <widget class="QPushButton" name="btnApplyAll">
-       <property name="text">
-        <string>Применить</string>
-       </property>
-      </widget>
-     </item>
-     <item row="14" column="0">
-      <widget class="QPushButton" name="btRefresh">
-       <property name="enabled">
-        <bool>true</bool>
-       </property>
-       <property name="text">
-        <string>Обновить</string>
-       </property>
-      </widget>
-     </item>
-     <item row="8" column="2">
-      <widget class="QLineEdit" name="edSensorInit"/>
-     </item>
-     <item row="7" column="2">
-      <widget class="QLineEdit" name="edPwrOn"/>
-     </item>
-     <item row="11" column="2">
-      <widget class="QLabel" name="label_13">
-       <property name="text">
-        <string>Положения сервомашинки</string>
-       </property>
-      </widget>
-     </item>
-     <item row="9" column="2">
-      <widget class="QLineEdit" name="edRead"/>
-     </item>
-     <item row="12" column="0">
-      <widget class="QLabel" name="label_14">
-       <property name="text">
-        <string>Поднята, градусов</string>
-       </property>
-      </widget>
-     </item>
-     <item row="10" column="2">
-      <widget class="QLineEdit" name="edMeasures"/>
      </item>
      <item row="8" column="0">
       <widget class="QLabel" name="label_16">
@@ -429,44 +404,22 @@
        </property>
       </widget>
      </item>
-     <item row="10" column="0">
-      <widget class="QLabel" name="label_12">
+     <item row="11" column="2">
+      <widget class="QPushButton" name="btnApplyAll">
        <property name="text">
-        <string>Чтений данных</string>
+        <string>Применить</string>
        </property>
       </widget>
      </item>
-     <item row="13" column="0">
-      <widget class="QLabel" name="label_15">
+     <item row="5" column="0">
+      <widget class="QLabel" name="label_13">
        <property name="text">
-        <string>Опущена, градусов</string>
+        <string>Растений</string>
        </property>
       </widget>
      </item>
-     <item row="13" column="2">
-      <layout class="QHBoxLayout" name="horizontalLayout_7">
-       <item>
-        <widget class="QSpinBox" name="spinDownPos">
-         <property name="maximum">
-          <number>180</number>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="btnServoTest">
-         <property name="text">
-          <string>Проба</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </item>
-     <item row="15" column="0">
-      <widget class="QPushButton" name="btnGetTime">
-       <property name="text">
-        <string>Обновить время</string>
-       </property>
-      </widget>
+     <item row="5" column="2">
+      <widget class="QLineEdit" name="edPotsCount"/>
      </item>
     </layout>
    </item>

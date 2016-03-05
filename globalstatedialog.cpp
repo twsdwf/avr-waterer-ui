@@ -62,39 +62,42 @@ void GlobalStateDialog::onDataAvailable()
         QStringList data = buf.split(",");
         saved_flags = data[0].toInt();
         qDebug()<<"flags="<<saved_flags;
+        //buf: "0,1,500,100,100,900,2100,900,2100,3;"
         ui->chkIsRun->setChecked(saved_flags & 1);
+        ui->edPotsCount->setText(data[1]);
         //ui->rdStop->setChecked(flags & 1);
-        int val = data[1].toInt(), val1;
+        ui->edPwrOn->setText(data[2]);
+        ui->edSensorInit->setText(data[3]);
+        ui->edRead->setText(data[4]);
+        int val = data[5].toInt(), val1;
         val1 = val%100;
         val /= 100;
         ui->edWDTimeFrom->setText(QString("%1").arg(val));
         ui->edWDTimeFromM->setText(QString("%1").arg(val1));
-        val = data[2].toInt();
+        val = data[6].toInt();
         val1 = val%100;
         val /= 100;
         ui->edWDTimeTo->setText(QString("%1").arg(val));
         ui->edWDTimeToM->setText(QString("%1").arg(val1));
-        val = data[3].toInt();
+        val = data[7].toInt();
         val1 = val%100;
         val /= 100;
         ui->edWETimeFrom->setText(QString("%1").arg(val));
         ui->edWETimeFromM->setText(QString("%1").arg(val1));
-        val = data[4].toInt();
+        val = data[8].toInt();
         val1 = val%100;
         val /= 100;
         ui->edWETimeTo->setText(QString("%1").arg(val));
         ui->edWETimeToM->setText(QString("%1").arg(val1));
 
-        ui->edPwrOn->setText(data[5]);
-        ui->edSensorInit->setText(data[6]);
-        ui->edRead->setText(data[7]);
-        ui->edMeasures->setText(data[8]);
-        ui->edCheckTime->setText(data[9]);
-        ui->spinUpPos->setValue(data[10].toInt());
+        ui->edMeasures->setText(data[9]);
+        ui->edCheckTime->setText(data[10]);
+        /*ui->spinUpPos->setValue(data[10].toInt());
         data[11] = data[11].trimmed();
         data[11].chop(1);
         qDebug()<<data[11]<<" "<<data[11].toInt();
         ui->spinDownPos->setValue(data[11].toInt());
+        */
         this->state = gstNone;
         buf.clear();
         return;
@@ -225,24 +228,24 @@ void GlobalStateDialog::on_btRefresh_clicked()
 
 void GlobalStateDialog::on_btTestPos_clicked()
 {
-    QMutexLocker ml(mtx);
+   /* QMutexLocker ml(mtx);
     if (port){
         buf.clear();
         state = gstNone;
         QString cmd("S%1;\r\n");
         port->write(cmd.arg(ui->spinUpPos->value()).toLocal8Bit());
-    }
+    }*/
 }
 
 void GlobalStateDialog::on_btnServoTest_clicked()
 {
-    QMutexLocker ml(mtx);
+ /*   QMutexLocker ml(mtx);
     buf.clear();
     if (port){
         state = gstNone;
         QString cmd("S%1;\r\n");
         port->write(cmd.arg(ui->spinDownPos->value()).toLocal8Bit());
-    }
+    }*/
 }
 
 void GlobalStateDialog::on_btnGetTime_clicked()
@@ -263,6 +266,14 @@ void GlobalStateDialog::on_btnApplyAll_clicked()
     stm<<"cfg set ";
     stm<<(ui->chkIsRun->isChecked()?(saved_flags|1):(saved_flags&0xFE));
     stm<<",";
+    stm<<ui->edPotsCount->text();
+    stm<<",";
+    stm<<ui->edPwrOn->text();
+    stm<<",";
+    stm<<ui->edSensorInit->text();
+    stm<<",";
+    stm<<ui->edRead->text();
+    stm<<",";
     stm<<(ui->edWDTimeFrom->text().toInt()*100+ui->edWDTimeFromM->text().toInt());
     stm<<",";
     stm<<(ui->edWDTimeTo->text().toInt()*100+ui->edWDTimeToM->text().toInt());
@@ -271,20 +282,17 @@ void GlobalStateDialog::on_btnApplyAll_clicked()
     stm<<",";
     stm<<(ui->edWETimeTo->text().toInt()*100+ui->edWETimeToM->text().toInt());
     stm<<",";
-    stm<<ui->edPwrOn->text();
-    stm<<",";
-    stm<<ui->edSensorInit->text();
-    stm<<",";
-    stm<<ui->edRead->text();
-    stm<<",";
     stm<<ui->edMeasures->text();
     stm<<",";
     stm<<ui->edCheckTime->text();
+    stm<<";\r\n";
+
+/*    stm<<ui->edCheckTime->text();
     stm<<",";
     stm<<ui->spinUpPos->value();
     stm<<",";
     stm<<ui->spinDownPos->value();
-    stm<<";\r\n";
+    stm<<";\r\n";*/
     qDebug()<<cmd;
     QMutexLocker ml(mtx);
     if (port){

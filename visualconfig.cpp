@@ -73,6 +73,7 @@ void VisualConfig::setPort(QextSerialPort *port)
     if (b) {
         QObject::connect(this->port, SIGNAL(readyRead()), this, SLOT(dataAvailable()));
         state = vcstReadSize;
+        qDebug()<<"WSZ send;";
         this->port->write("WSZ;\r\n");
     }
 }
@@ -321,22 +322,27 @@ void VisualConfig::dataAvailable()
                buf = buf.trimmed();
                buf.chop(1);
                QStringList parts = buf.split(",");
-               if (parts.length() >=15) {
+               if (parts.length() >=12) {
+//pot set <index>,<flags>,<dev>,<pin>,<x>,<y>,<name>,<airTime>,<state>,<enabled>,<ml>,<pgm>,<param1>[,param2][,param3]...;
                    PlantData pd;
                    pd.index = parts[0].toInt();
-                   pd.flags = parts[1].toInt();
-                   pd.name = parts[2];
-                   pd.chip = parts[3].toInt();
-                   pd.pin = parts[4].toInt();
-                   pd.X = parts[5].toInt();
-                   pd.Y = parts[6].toInt();
-                   pd.portion = parts[7].toInt();
-                   pd.pgm = parts[8].toInt();
-                   qDebug()<<"pot "<<last_index<<" pgm ="<<pd.pgm;
-                   pd.min = parts[9].toInt();
-                   pd.max = parts[10].toInt();
-                   pd.daymax = parts[11].toInt();
-                   pd.en = parts[14].toInt();
+                   pd.flags = 0;//parts[1].toInt();
+                   pd.chip = parts[1].toInt();
+                   pd.pin = parts[2].toInt();
+                   pd.X = parts[3].toInt();
+                   pd.Y = parts[4].toInt();
+                   pd.name = parts[5];
+                   pd.en = parts[8].toInt();
+                   pd.portion = parts[9].toInt();
+                   pd.pgm = parts[10].toInt();
+                   if (pd.pgm == 1) {
+                       pd.max = parts[11].toInt();
+                       pd.daymax = parts[12].toInt();
+                   } else if(pd.pgm == 2) {
+                        pd.min = parts[11].toInt();
+                        pd.max = parts[12].toInt();
+                        pd.daymax = parts[13].toInt();
+                   }
                    this->pots_data->push_back(pd);
                    ++last_index;
                } else {
@@ -350,7 +356,7 @@ void VisualConfig::dataAvailable()
                    //this->port->flush();
                } else {
                    this->setPotsData(pots_data);
-                   state = vcstGetW2Dsizes;
+                   state = vcstReadSize;
                    __msg("Запрос данных о дозаторе...");
                    this->port->write("WSZ;\r\n");
                }
@@ -363,7 +369,7 @@ void VisualConfig::dataAvailable()
         } else {
            return;
         }
-    } else if (state == vcstGetW2Dsizes) {
+    } else if (state == vcstReadSize) {
         QRegExp re("^.*(\\d+)\\s*\\,\\s*(\\d+).*");
         qDebug()<<buf;
         if (re.indexIn(buf) > -1) {
@@ -474,6 +480,7 @@ void VisualConfig::dataAvailable()
 
 bool VisualConfig::__isXYused(int x, int y)
 {
+    qDebug()<<"__isXYused:"<<this->pots_data;
     if (this->pots_data == NULL) return false;
     for (QVector<PlantData>::iterator it = pots_data->begin(); it != pots_data->end(); ++it) {
         if (it->X == x && it->Y == y) return true;
@@ -603,25 +610,29 @@ void VisualConfig::__sendConfigLine(int index)
      PlantData pd = pots_data->at(index);
      int test = pd.chip + pd.pin + pd.X +pd.Y +pd.portion + pd.pgm;
      if (test > 0 && pd.X >= 0 && pd.Y >=0) {
-         //pot set <index>,<flags>,<dev>,<pin>,<dry>,<wet>,<x>,<y>,<name>,<pgm>,<airTime>,<state>,<enabled>,<ml>,<daymax>;
+//pot set <index>,<flags>,<dev>,<pin>,<x>,<y>,<name>,<airTime>,<state>,<enabled>,<ml>,<pgm>,<param1>[,param2][,param3]...;
          QString line/*("pot set %1,%2,%3,%4,%5,%6,%7,%8,%9,%10,%11,%12,%13,%14,%15;\r\n")*/;
          QTextStream stm;
          stm.setString(&line);
          stm<<"pot set "<<index<<","<<
-                  pd.flags<<","<<
-                  pd.name<<","<<
+                  //pd.flags<<","<<
                   pd.chip<<","<<
                   pd.pin<<","<<
                   pd.X<<","<<
                   pd.Y<<","<<
-                  pd.portion<<","<<
-                  pd.pgm<<","<<
-                  pd.min<<","<<
-                  pd.max<<","<<
-                  pd.daymax<<","<<
+                  pd.name<<","<<
                   2/*airtime*/<<","<<
                   0<<","<<
-                pd.en<<","<<";\r\n";
+                  pd.en<<","<<
+                  pd.portion<<","<<
+                  pd.pgm<<",";
+         if (pd.pgm == 1) {
+                  stm<<pd.max<<","<<
+                  pd.daymax;
+         } else if (pd.pgm == 2) {
+             stm<<pd.min<<","<<pd.max<<","<<pd.daymax;
+         }
+         stm<<";\r\n";
          qDebug()<<"line "<<line;
          port->write(line.toLatin1());
      } else {
@@ -635,10 +646,14 @@ void VisualConfig::on_btnApply_clicked()
 {
     int x = ui->spinX->value(),
         y = ui->spinY->value();
+    if (this->pots_data == NULL) {
+        pots_data = new QVector<PlantData>;
+    }
     if (!__isXYused(x, y)) {
         qDebug()<<"new item";
         PlantData item;
-        memset(&item, 0, sizeof(PlantData));
+        //memset(&item, 0, sizeof(PlantData));
+        item.flags = 0;
         item.name = ui->edName->text();
         item.X = ui->spinX->value();
         item.Y = ui->spinY->value();
@@ -646,6 +661,14 @@ void VisualConfig::on_btnApply_clicked()
         item.pin = ui->edPin->text().toInt();
         item.en = ui->chkEn->isChecked()?1:0;
         item.daymax = ui->edDayMax->text().toInt();
+        item.portion = ui->edML->text().toInt();
+        item.pgm = ui->rdPgm1->isChecked()?1:2;
+        if (item.pgm == 1) {
+            item.max = ui->edPgm1Value->text().toInt();
+        } else if (item.pgm == 2) {
+            item.min = ui->edPgm2MinValue->text().toInt();
+            item.max = ui->edPgm2MaxValue->text().toInt();
+        }
         pots_data->append(item);
         int index = item.X*szx + item.Y;
         if (index < xy.count()) {
@@ -655,6 +678,7 @@ void VisualConfig::on_btnApply_clicked()
             //QMap<int, QMap<int, QLabel*>*> chip_view;
             chip_view.find(item.chip).value()->find(item.pin).value()->setText(QString("%1 %2").arg(item.pin, 2, 10, QChar(' ')).arg(item.name));
         }
+        qDebug()<<"chip view set";
     } else {
         qDebug()<<"update item";
         for (QVector<PlantData>::iterator it = pots_data->begin(); it != pots_data->end(); ++it) {
@@ -1002,7 +1026,9 @@ void VisualConfig::on_btnConnect_clicked()
         connect(port, SIGNAL(readyRead()), this, SLOT(dataAvailable()));
         __setExchButtonsState(true);
         if (dlg.isAutoloadConfig()) {
-            on_btReadFromDev_clicked();
+            state = vcstReadSize;
+            port->write("WSZ;\r\n");
+            //on_btReadFromDev_clicked();
         }
     } else {
         __msg("Нет соединения, работаем локально");
@@ -1061,7 +1087,7 @@ void VisualConfig::on_edRawCmd_returnPressed()
     QMutexLocker ml(mtx);
     buf.clear();
     state = vcstReadRaw;
-    port->write(ui->edRawCmd->text().toLocal8Bit());
+    port->write(ui->edRawCmd->text().append("\r\n").toLocal8Bit());
 }
 
 void VisualConfig::on_btnLogClear_clicked()
