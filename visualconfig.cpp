@@ -82,6 +82,7 @@ void VisualConfig::setWaterDoserSizes(int _x, int _y)
 {
     this->szx = _x;
     this->szy = _y;
+    qDebug()<<"setWaterDoserSizes("<<_x<<","<<_y<<")";
     /*QList<QAbstractButton *> rms = btngrp->buttons();
     for (int i = 0; i< rms.count(); ++i) {
         btngrp->removeButton(rms[i]);
@@ -225,8 +226,8 @@ void VisualConfig::xy_clicked(int id)
         qDebug()<<"no pots data";
         return;
     }
-    //qDebug()<<"xy_clicked("<<x<<","<<y<<")";
-    __resetState(x * szx + y, -1);
+    qDebug()<<"xy_clicked("<<x<<","<<y<<") sizes "<<szx<<"x"<<szy;
+    __resetState(x * szy + y, -1);
     for (QVector<PlantData>::const_iterator it = pots_data->constBegin(); it != pots_data->constEnd(); ++it) {
         if (it->X == x && it->Y == y) {
             //qDebug()<<"found "<<it->name<<" "<<it->X<<" "<<it->Y;
@@ -238,7 +239,7 @@ void VisualConfig::xy_clicked(int id)
     ui->spinX->setValue(x);
     ui->spinY->setValue(y);
     if (!ui->edName->text().isEmpty()) {
-        this->__resetState(x*szx+y, -1);
+        this->__resetState(x*szy+y, -1);
         ui->edChip->setText("-1");
         ui->edPin->setText("-1");
         ui->edName->setText("");
@@ -280,9 +281,16 @@ void VisualConfig::dataAvailable()
     //qDebug()<<"data:"<<port->readAll();
     QMutexLocker ml(mtx);
     QByteArray data = port->readAll();
-    static int dumb_reads = 0;
-    ui->txtLog->appendPlainText(data);
 
+    static int dumb_reads = 0;
+   /* if (data.length() > 0 && data.contains(';')) {
+        QString text = ui->txtLog->toPlainText().trimmed();
+        if (text.endsWith(QChar(';'))) {
+            text.append("\r\n");
+        }
+        text.append(data);*/
+        ui->txtLog->appendPlainText(data);
+   // }
     if (data.length() == 0) {
         if (dumb_reads > 10) {
             port->close();
@@ -335,13 +343,17 @@ void VisualConfig::dataAvailable()
                    pd.en = parts[8].toInt();
                    pd.portion = parts[9].toInt();
                    pd.pgm = parts[10].toInt();
+                   qDebug()<<"pot index="<<pd.index<<" chip="<<pd.chip<<" pin="<<pd.pin<<" x="<<pd.X<<"y="<<pd.Y
+                          <<" name="<<pd.name<<" portion="<<pd.portion<<" en="<<pd.en<<" pgm="<<pd.pgm;
                    if (pd.pgm == 1) {
                        pd.max = parts[11].toInt();
                        pd.daymax = parts[12].toInt();
+                       qDebug()<<" barval="<<pd.max<<" daymax="<<pd.daymax;
                    } else if(pd.pgm == 2) {
                         pd.min = parts[11].toInt();
                         pd.max = parts[12].toInt();
                         pd.daymax = parts[13].toInt();
+                        qDebug()<<" range:"<<pd.min<<".."<<pd.min<<" daymax="<<pd.daymax;
                    }
                    this->pots_data->push_back(pd);
                    ++last_index;
@@ -356,9 +368,11 @@ void VisualConfig::dataAvailable()
                    //this->port->flush();
                } else {
                    this->setPotsData(pots_data);
-                   state = vcstReadSize;
+                   setWaterDoserSizes(szx, szy);
+                   /*state = vcstReadSize;
                    __msg("Запрос данных о дозаторе...");
                    this->port->write("WSZ;\r\n");
+                   */
                }
            } else {
                buf.clear();
@@ -456,7 +470,7 @@ void VisualConfig::dataAvailable()
 
         if (buf.contains("OK")) {
             buf.clear();
-            if (last_index == pots_data->count() - 1) {
+            if (last_index == pots_data->count()) {
                 qDebug()<<"cfg ok, setting pots count...";
                 state = vcstSendSensorsCount;
                 this->port->write(QString("pot set count %1;\r\n").arg(pots_data->count()).toLatin1());
@@ -470,7 +484,7 @@ void VisualConfig::dataAvailable()
         }
         return;
     } else if (state == vcstSendSensorsCount) {
-        if (buf.contains("pots=")) {
+        if (buf.contains("pots=") || buf.contains("OK;")) {
             buf.clear();
             __msg("Конфигурация отправлена");
             state = vcstNone;
@@ -480,7 +494,7 @@ void VisualConfig::dataAvailable()
 
 bool VisualConfig::__isXYused(int x, int y)
 {
-    qDebug()<<"__isXYused:"<<this->pots_data;
+    //qDebug()<<"__isXYused:"<<this->pots_data;
     if (this->pots_data == NULL) return false;
     for (QVector<PlantData>::iterator it = pots_data->begin(); it != pots_data->end(); ++it) {
         if (it->X == x && it->Y == y) return true;
@@ -506,12 +520,12 @@ void VisualConfig::__setCurrentPot(QVector<PlantData>::const_iterator& it)
     qDebug()<<"pgm:"<<it->pgm;
     ui->rdPgm1->setChecked(it->pgm == 1);
     ui->rdPgm2->setChecked(it->pgm == 2);
-    ui->edPgm1Value->setText(QString("%1").arg(it->min));
+    ui->edPgm1Value->setText(QString("%1").arg(it->max));
     ui->edPgm2MinValue->setText(QString("%1").arg(it->min));
     ui->edPgm2MaxValue->setText(QString("%1").arg(it->max));
 
 
-    int this_btn = it->X * szx + it->Y;
+    int this_btn = it->X * szy + it->Y;
     qDebug()<<"this_btn="<<this_btn;
     for (int i = 0; i < xy.count(); ++i) {
         ((QPushButton*)xy[i])->setChecked(i == this_btn);
@@ -607,8 +621,15 @@ void VisualConfig::__sendConfigLine(int index)
         __msg("Порт недоступен. Обрыв связи?");
         return;
     }
+    if (index < 0 ||index >= pots_data->count()) {
+        qDebug()<<"cfg ok, setting pots count...";
+        state = vcstSendSensorsCount;
+        this->port->write(QString("pot set count %1;\r\n").arg(pots_data->count()).toLatin1());
+        return;
+    }
      PlantData pd = pots_data->at(index);
      int test = pd.chip + pd.pin + pd.X +pd.Y +pd.portion + pd.pgm;
+     qDebug()<<"__sendConfigLine #"<<index<<" of "<<pots_data->count()<<" test:"<<test;
      if (test > 0 && pd.X >= 0 && pd.Y >=0) {
 //pot set <index>,<flags>,<dev>,<pin>,<x>,<y>,<name>,<airTime>,<state>,<enabled>,<ml>,<pgm>,<param1>[,param2][,param3]...;
          QString line/*("pot set %1,%2,%3,%4,%5,%6,%7,%8,%9,%10,%11,%12,%13,%14,%15;\r\n")*/;
@@ -633,7 +654,7 @@ void VisualConfig::__sendConfigLine(int index)
              stm<<pd.min<<","<<pd.max<<","<<pd.daymax;
          }
          stm<<";\r\n";
-         qDebug()<<"line "<<line;
+         qDebug()<<"cfg line "<<line;
          port->write(line.toLatin1());
      } else {
         //pots_data->remove(index);
@@ -654,6 +675,7 @@ void VisualConfig::on_btnApply_clicked()
         PlantData item;
         //memset(&item, 0, sizeof(PlantData));
         item.flags = 0;
+        item.index = pots_data->count();
         item.name = ui->edName->text();
         item.X = ui->spinX->value();
         item.Y = ui->spinY->value();
@@ -670,7 +692,7 @@ void VisualConfig::on_btnApply_clicked()
             item.max = ui->edPgm2MaxValue->text().toInt();
         }
         pots_data->append(item);
-        int index = item.X*szx + item.Y;
+        int index = item.X*szy + item.Y;
         if (index < xy.count()) {
             ((QPushButton*)xy[index])->setText(QString("*"));
         }
@@ -681,8 +703,10 @@ void VisualConfig::on_btnApply_clicked()
         qDebug()<<"chip view set";
     } else {
         qDebug()<<"update item";
-        for (QVector<PlantData>::iterator it = pots_data->begin(); it != pots_data->end(); ++it) {
+        int i = 0;
+        for (QVector<PlantData>::iterator it = pots_data->begin(); it != pots_data->end(); ++it,++i) {
             if (it->X == x && it->Y == y) {
+                qDebug()<<"index: "<<i;
                 it->name = ui->edName->text();
                 it->chip = ui->edChip->text().toInt();
                 it->pin = ui->edPin->text().toInt();
