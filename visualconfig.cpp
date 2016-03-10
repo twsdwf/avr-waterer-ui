@@ -712,6 +712,14 @@ void VisualConfig::on_btnApply_clicked()
                 it->pin = ui->edPin->text().toInt();
                 it->en = ui->chkEn->isChecked() ? 1 : 0;
                 it->daymax = ui->edDayMax->text().toInt();
+                it->portion = ui->edML->text().toInt();
+                it->pgm = ui->rdPgm1->isChecked()?1:2;
+                if (it->pgm == 1) {
+                    it->max = ui->edPgm1Value->text().toInt();
+                } else if (it->pgm == 2) {
+                    it->min = ui->edPgm2MinValue->text().toInt();
+                    it->max = ui->edPgm2MaxValue->text().toInt();
+                }
                 if (chip_view.find(it->chip)!= chip_view.end()) {
                     if (chip_view.find(it->chip).value()->find(it->pin)!= chip_view.find(it->chip).value()->end()) {
                         QPushButton*btn = chip_view.find(it->chip).value()->find(it->pin).value();
