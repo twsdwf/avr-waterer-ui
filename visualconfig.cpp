@@ -398,8 +398,10 @@ void VisualConfig::dataAvailable()
             //qDebug()<<buf<<" : not matched";
         }
     } else if (state == vcstReadPin) {
-        QRegExp re("^.*(\\d+)\\s*\\,\\s*(\\d+)\\s*\\,\\s*(\\d+).*");
-        if (re.indexIn(buf) > -1) {
+        QString cleaned = buf.replace(QRegExp("\s"), "");
+        qDebug()<<"cleaned:["<<cleaned<<"]";
+        QRegExp re("^.*(\\d+),(\\d+)\\,(\\d+);");
+        if (re.indexIn(cleaned) > -1) {
             if (re.captureCount() >=3) {
                 pinValueEdit->setText(re.cap(3));
                 state = vcstNone;
@@ -407,9 +409,10 @@ void VisualConfig::dataAvailable()
             }
         }
     } else if (state == vcstReadCurStateStep1) {
-        if (!buf.contains(";")) return;
+        if (!buf.contains(";;")) return;
         QString s = QString(buf);
-        QStringList devs = s.split(QString(","));
+        QStringList devs = s.split(QString(";"));
+        qDebug()<<"parts:"<<devs.count();
         if (devs.count() < 2) {
             state = vcstNone;
             __msg("Нет датчиков!");
@@ -417,14 +420,38 @@ void VisualConfig::dataAvailable()
             buf.clear();
             return;
         }
-        QString cmd;
+        for (int i=0; i< devs.count();++i) {
+            if (devs.at(i).length() < 5) {
+                continue;
+            }//if len
+            qDebug()<<"string:"<<devs[i];
+            QRegExp re("^(\\d{2})\\:(\\d{1,4})\\,(\\d{1,4})\\,(\\d{1,4})\\,(\\d{1,4})\\,(\\d{1,4})\\,(\\d{1,4})\\,(\\d{1,4})\\,(\\d{1,4})\\,(\\d{1,4})\\,(\\d{1,4})\\,(\\d{1,4})\\,(\\d{1,4})\\,(\\d{1,4})\\,(\\d{1,4})\\,(\\d{1,4})\\,(\\d{1,4})");
+            if (re.indexIn(devs[i]) > -1) {
+                int chip = re.cap(1).toInt();
+                for(int pin=0;pin<16;++pin) {
+                        QMap<int, QMap<int, QLabel*>*>::iterator itc = sensor_values.find(chip);
+                        if (itc != sensor_values.end()) {
+                            QMap<int, QLabel*>::iterator itp = itc.value()->find(pin);
+                            if (itp!= itc.value()->end()) {
+                                itp.value()->setText(re.cap(pin+2));
+                            } else {
+                                qDebug()<<"pin "<<pin<<" not found";
+                            }
+                        } else {
+                            qDebug()<<"chip "<<chip<<" not found";
+                        }
+                }//for pin
+            }//if capped
+        }//for i
+        /*QString cmd;
         for (int i=0; i< devs.count()-1; ++i ) {
             cmd.append(QString("iic %1,*;").arg(devs[i]));
-        }
+        }*/
         buf.clear();
-        port->write(cmd.toLocal8Bit());
+        /*port->write(cmd.toLocal8Bit());
         state = vcstReadCurStateStep2;
         __msg("Запрос данных с датчиков...");
+        */
         return;
     } else if (state == vcstReadCurStateStep2) {
         if (!buf.contains(";")) {
@@ -789,7 +816,7 @@ void VisualConfig::on_btnPgm1Revert_clicked()
            pin = ui->edPin->text().toInt();
     for (QVector<PlantData>::iterator it = pots_data->begin(); it != pots_data->end(); ++it) {
         if (it->chip == chip && it->pin == pin) {
-            ui->edPgm1Value->setText(QString("%1").arg(it->min));
+            ui->edPgm1Value->setText(QString("%1").arg(it->max));
             return;
         }
     }
@@ -1043,7 +1070,7 @@ void VisualConfig::on_btReadAllSensors_clicked()
     port->flush();
     buf.clear();
     last_index = -1;
-    port->write("iic list;\r\n");
+    port->write("sdump;\r\n");
 }
 
 void VisualConfig::on_btnConnect_clicked()
