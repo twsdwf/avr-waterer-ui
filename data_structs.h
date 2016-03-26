@@ -54,6 +54,7 @@ public:
     int portion;
     int pgm;
     int en;
+    int air;
     QString name;
 /*public:
     bool operator<(const PlantData b) const

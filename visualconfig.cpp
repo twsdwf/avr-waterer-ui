@@ -243,6 +243,7 @@ void VisualConfig::xy_clicked(int id)
         ui->edChip->setText("-1");
         ui->edPin->setText("-1");
         ui->edName->setText("");
+        ui->rdLong->setChecked(1);
     }
     ui->chkEn->setChecked(false);
 }
@@ -340,6 +341,8 @@ void VisualConfig::dataAvailable()
                    pd.X = parts[3].toInt();
                    pd.Y = parts[4].toInt();
                    pd.name = parts[5];
+                   pd.air = parts[6].toInt();
+                   qDebug()<<"air:"<<pd.air;
                    pd.en = parts[8].toInt();
                    pd.portion = parts[9].toInt();
                    pd.pgm = parts[10].toInt();
@@ -544,6 +547,10 @@ void VisualConfig::__setCurrentPot(QVector<PlantData>::const_iterator& it)
     ui->edDayMax->setText(QString("%1").arg(it->daymax));
     ui->grpbxPgm1->setVisible(it->pgm == 1);
     ui->grpbxPgm2->setVisible(it->pgm == 2);
+    qDebug()<<"air:"<<it->air;
+    ui->rdShort->setChecked(it->air == 0);
+    ui->rdMedium->setChecked(it->air == 1);
+    ui->rdLong->setChecked(it->air == 2);
     qDebug()<<"pgm:"<<it->pgm;
     ui->rdPgm1->setChecked(it->pgm == 1);
     ui->rdPgm2->setChecked(it->pgm == 2);
@@ -669,7 +676,7 @@ void VisualConfig::__sendConfigLine(int index)
                   pd.X<<","<<
                   pd.Y<<","<<
                   pd.name<<","<<
-                  2/*airtime*/<<","<<
+                  pd.air/*airtime*/<<","<<
                   0<<","<<
                   pd.en<<","<<
                   pd.portion<<","<<
@@ -712,6 +719,7 @@ void VisualConfig::on_btnApply_clicked()
         item.daymax = ui->edDayMax->text().toInt();
         item.portion = ui->edML->text().toInt();
         item.pgm = ui->rdPgm1->isChecked()?1:2;
+        item.air = (ui->rdShort->isChecked()?0:(ui->rdMedium->isChecked()?1:2));
         if (item.pgm == 1) {
             item.max = ui->edPgm1Value->text().toInt();
         } else if (item.pgm == 2) {
@@ -741,6 +749,7 @@ void VisualConfig::on_btnApply_clicked()
                 it->daymax = ui->edDayMax->text().toInt();
                 it->portion = ui->edML->text().toInt();
                 it->pgm = ui->rdPgm1->isChecked()?1:2;
+                it->air = (ui->rdShort->isChecked()?0:(ui->rdMedium->isChecked()?1:2));
                 if (it->pgm == 1) {
                     it->max = ui->edPgm1Value->text().toInt();
                 } else if (it->pgm == 2) {

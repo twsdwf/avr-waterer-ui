@@ -510,7 +510,7 @@
            <enum>QTabWidget::North</enum>
           </property>
           <property name="currentIndex">
-           <number>1</number>
+           <number>0</number>
           </property>
           <widget class="QWidget" name="tab_7">
            <attribute name="title">
@@ -832,34 +832,86 @@
               </item>
              </layout>
             </item>
-            <item row="11" column="1">
-             <widget class="QLabel" name="label_14">
-              <property name="font">
-               <font>
-                <weight>75</weight>
-                <bold>true</bold>
-               </font>
-              </property>
+            <item row="8" column="0">
+             <widget class="QLabel" name="label_15">
               <property name="text">
-               <string>Программа полива</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Шланг&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
              </widget>
             </item>
-            <item row="12" column="1">
-             <widget class="QRadioButton" name="rdPgm1">
-              <property name="text">
-               <string>Постоянная влажность</string>
+            <item row="8" column="1">
+             <widget class="QGroupBox" name="groupBox">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>0</height>
+               </size>
               </property>
+              <property name="baseSize">
+               <size>
+                <width>50</width>
+                <height>50</height>
+               </size>
+              </property>
+              <property name="title">
+               <string/>
+              </property>
+              <property name="flat">
+               <bool>true</bool>
+              </property>
+              <layout class="QHBoxLayout" name="horizontalLayout_11">
+               <property name="leftMargin">
+                <number>0</number>
+               </property>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_10">
+                 <property name="leftMargin">
+                  <number>0</number>
+                 </property>
+                 <item>
+                  <widget class="QRadioButton" name="rdShort">
+                   <property name="text">
+                    <string>короткий</string>
+                   </property>
+                   <property name="autoExclusive">
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QRadioButton" name="rdMedium">
+                   <property name="text">
+                    <string>средний</string>
+                   </property>
+                   <property name="autoExclusive">
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QRadioButton" name="rdLong">
+                   <property name="text">
+                    <string>длинный</string>
+                   </property>
+                   <property name="autoExclusive">
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+              </layout>
+              <zorder>rdLong</zorder>
+              <zorder>rdMedium</zorder>
+              <zorder>rdShort</zorder>
+              <zorder>rdShort</zorder>
+              <zorder>rdShort</zorder>
+              <zorder>rdMedium</zorder>
+              <zorder>rdLong</zorder>
+              <zorder>horizontalLayoutWidget</zorder>
              </widget>
             </item>
-            <item row="13" column="1">
-             <widget class="QRadioButton" name="rdPgm2">
-              <property name="text">
-               <string>Полив и подсушка</string>
-              </property>
-             </widget>
-            </item>
-            <item row="10" column="1">
+            <item row="9" column="1">
              <widget class="QPushButton" name="btnApply">
               <property name="text">
                <string>Применить</string>
@@ -868,6 +920,41 @@
                <iconset resource="resources.qrc">
                 <normaloff>:/icons/res/apply.png</normaloff>:/icons/res/apply.png</iconset>
               </property>
+             </widget>
+            </item>
+            <item row="10" column="1">
+             <widget class="QGroupBox" name="groupBox_2">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>50</height>
+               </size>
+              </property>
+              <property name="title">
+               <string>Программа полива</string>
+              </property>
+              <property name="flat">
+               <bool>true</bool>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_6">
+               <item>
+                <widget class="QRadioButton" name="rdPgm1">
+                 <property name="text">
+                  <string>Постоянная влажность</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QRadioButton" name="rdPgm2">
+                 <property name="text">
+                  <string>Полив и подсушка</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+              <zorder>rdPgm1</zorder>
+              <zorder>rdPgm1</zorder>
+              <zorder>rdPgm2</zorder>
              </widget>
             </item>
            </layout>
@@ -1307,6 +1394,7 @@
        <attribute name="title">
         <string>Tab 1</string>
        </attribute>
+       <zorder>tabPotData</zorder>
       </widget>
       <widget class="QWidget" name="tab_2">
        <attribute name="title">
